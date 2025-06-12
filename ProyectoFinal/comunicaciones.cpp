@@ -62,7 +62,7 @@ String obtenerTimestamp()
     }
     else
     {
-        sprintf(timestamp, "2024-01-01T00:00:00");
+        sprintf(timestamp, "2024-06-12T03:27:36"); // Fecha actual como fallback
     }
 
     return String(timestamp);
@@ -86,11 +86,16 @@ void enviarDatosFirebase(const DatosGases &gases, const DatosAmbiente &ambiente,
     doc["gases"]["LPG"] = round(gases.lpg * 100) / 100.0;
     doc["gases"]["Alcohol"] = round(gases.alcohol * 100) / 100.0;
     doc["gases"]["Metano"] = round(gases.metano * 100) / 100.0;
+    doc["gases"]["CO2"] = round(gases.co2_ppm * 100) / 100.0; // ⭐ Nuevo campo ⭐
 
     // MQ-2 Principal
     doc["mq2_principal"]["ppm_logaritmico"] = round(gases.ppm_logaritmico);
     doc["mq2_principal"]["ppm_lineal"] = round(gases.ppm_lineal);
     doc["mq2_principal"]["ratio"] = round(gases.ratio_principal * 100) / 100.0;
+
+    // ⭐ MQ135 CO₂ ⭐
+    doc["mq135"]["co2_ppm"] = round(gases.co2_ppm * 100) / 100.0;
+    doc["mq135"]["sensor_type"] = "MQ135";
 
     // Datos ambientales
     doc["ambiente"]["humedad_suelo"] = round(ambiente.humedad_suelo * 10) / 10.0;
@@ -99,7 +104,11 @@ void enviarDatosFirebase(const DatosGases &gases, const DatosAmbiente &ambiente,
 
     // Metadatos
     doc["timestamp"] = timestamp;
-    doc["device_id"] = "ESP32_Unificado_v2";
+    doc["device_id"] = "ESP32_Unificado_v3";
+    doc["equipos"]["equipo1"] = "MQ2_Multiple";
+    doc["equipos"]["equipo2"] = "DHT11_HumedadSuelo";
+    doc["equipos"]["equipo3"] = "MQ2_Principal";
+    doc["equipos"]["equipo4"] = "MQ135_CO2"; // ⭐ Nuevo equipo ⭐
 
     // Enviar a Firebase
     HTTPClient http;
