@@ -7,6 +7,6 @@
 // ========== FUNCIONES PÚBLICAS ==========
 void inicializarSensoresAmbiente();
 DatosAmbiente leerSensoresAmbiente();
-void mostrarDatosAmbiente(const DatosAmbiente &datos);
+void mostrarDatosAmbiente(const DatosAmbiente& datos);
 
 #endif

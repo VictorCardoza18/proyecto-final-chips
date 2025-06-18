@@ -12,7 +12,7 @@
 void inicializarComunicaciones();
 bool conectarWiFi();
 String obtenerTimestamp();
-void enviarDatosFirebase(const DatosGases &gases, const DatosAmbiente &ambiente, const String &timestamp);
-void guardarBackupLocal(const String &datos);
+void enviarDatosFirebase(const DatosGases& gases, const DatosAmbiente& ambiente, const String& timestamp);
+void guardarBackupLocal(const String& datos);
 
 #endif

@@ -62,7 +62,7 @@ String obtenerTimestamp()
     }
     else
     {
-        sprintf(timestamp, "2024-06-12T03:27:36"); // Fecha actual como fallback
+        sprintf(timestamp, "2025-06-17T22:02:20"); // Fecha actualizada como fallback
     }
 
     return String(timestamp);
@@ -77,53 +77,47 @@ void enviarDatosFirebase(const DatosGases &gases, const DatosAmbiente &ambiente,
         return;
     }
 
-    // Crear JSON
-    DynamicJsonDocument doc(2048);
+    // Crear JSON simplificado
+    DynamicJsonDocument doc(1024);
 
-    // Datos de gases
-    doc["gases"]["CO"] = round(gases.co * 100) / 100.0;
-    doc["gases"]["Humo"] = round(gases.humo * 100) / 100.0;
-    doc["gases"]["LPG"] = round(gases.lpg * 100) / 100.0;
-    doc["gases"]["Alcohol"] = round(gases.alcohol * 100) / 100.0;
-    doc["gases"]["Metano"] = round(gases.metano * 100) / 100.0;
-    doc["gases"]["CO2"] = round(gases.co2_ppm * 100) / 100.0; // ⭐ Nuevo campo ⭐
+    // Solo los 3 gases que necesitas
+    doc["gases"]["Humo"] = round(gases.humo_ppm * 100) / 100.0;
+    doc["gases"]["Butano"] = round(gases.butano_ppm * 100) / 100.0;
+    doc["gases"]["CO2"] = round(gases.co2_ppm * 100) / 100.0;
 
-    // MQ-2 Principal
-    doc["mq2_principal"]["ppm_logaritmico"] = round(gases.ppm_logaritmico);
-    doc["mq2_principal"]["ppm_lineal"] = round(gases.ppm_lineal);
-    doc["mq2_principal"]["ratio"] = round(gases.ratio_principal * 100) / 100.0;
-
-    // ⭐ MQ135 CO₂ ⭐
-    doc["mq135"]["co2_ppm"] = round(gases.co2_ppm * 100) / 100.0;
-    doc["mq135"]["sensor_type"] = "MQ135";
-
-    // Datos ambientales
+    // Solo los datos ambientales que necesitas
     doc["ambiente"]["humedad_suelo"] = round(ambiente.humedad_suelo * 10) / 10.0;
     doc["ambiente"]["humedad_aire"] = round(ambiente.humedad_aire * 10) / 10.0;
     doc["ambiente"]["temperatura"] = round(ambiente.temperatura * 10) / 10.0;
 
-    // Metadatos
+    // Metadatos simplificados
     doc["timestamp"] = timestamp;
-    doc["device_id"] = "ESP32_Unificado_v3";
-    doc["equipos"]["equipo1"] = "MQ2_Multiple";
-    doc["equipos"]["equipo2"] = "DHT11_HumedadSuelo";
-    doc["equipos"]["equipo3"] = "MQ2_Principal";
-    doc["equipos"]["equipo4"] = "MQ135_CO2"; // ⭐ Nuevo equipo ⭐
+    doc["device_id"] = "ESP32_Simplificado";
+    doc["sensores"]["humo"] = "MQ2";
+    doc["sensores"]["butano"] = "MQ2";
+    doc["sensores"]["co2"] = "MQ135";
+    doc["sensores"]["ambiente"] = "DHT11";
 
-    // Enviar a Firebase
+    // 🔥 CAMBIO PRINCIPAL: Usar POST para crear registros únicos
     HTTPClient http;
-    String firebaseURL = String(FIREBASE_HOST) + "/lecturas_unificadas.json";
+    String firebaseURL = String(FIREBASE_HOST) + "/historial_lecturas.json"; // Nueva colección
     http.begin(firebaseURL);
     http.addHeader("Content-Type", "application/json");
 
     String jsonString;
     serializeJson(doc, jsonString);
 
-    int httpResponseCode = http.PATCH(jsonString);
+    // 🔥 USAR POST en lugar de PATCH - Firebase auto-genera IDs únicos
+    int httpResponseCode = http.POST(jsonString);
 
     if (httpResponseCode > 0)
     {
-        Serial.printf("✅ Datos enviados a Firebase - Código: %d\n", httpResponseCode);
+        Serial.printf("✅ Registro creado en Firebase - Código: %d\n", httpResponseCode);
+        
+        // Mostrar el ID generado por Firebase
+        String response = http.getString();
+        Serial.println("📝 Respuesta Firebase: " + response);
+        
         guardarBackupLocal(jsonString);
     }
     else

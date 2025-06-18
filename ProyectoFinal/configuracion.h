@@ -2,32 +2,30 @@
 #define CONFIGURACION_H
 
 #include <Arduino.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include <SPIFFS.h>
+#include <DHT.h>
+#include <time.h>
 
 // ========== CONFIGURACIÓN WIFI ==========
-#define WIFI_SSID "POCO M6 Pro"
-#define WIFI_PASSWORD "contrasena"
-#define FIREBASE_HOST "https://gas-esp32-default-rtdb.firebaseio.com"
+#define WIFI_SSID "UrbanDataIsland_2.4"
+#define WIFI_PASSWORD "FZAzXBnqEcP4"
+#define FIREBASE_HOST "https://humedad-en-esp32-default-rtdb.firebaseio.com/"
 
-// ========== PINES SENSORES ==========
-// Sensores MQ-2 múltiples
-#define PIN_MQ2_CO 32
-#define PIN_MQ2_HUMO 33
-#define PIN_MQ2_LPG 34
-#define PIN_MQ2_ALCOHOL 35
-#define PIN_MQ2_METANO 36
-
-// MQ-2 Principal
-#define PIN_MQ2_PRINCIPAL 39
-
-// ⭐ MQ135 para CO₂ ⭐
-#define PIN_MQ135 26 // Cambié el pin para evitar conflictos
+// ========== PINES SENSORES SIMPLIFICADOS ==========
+// Solo los sensores que necesitas
+#define PIN_MQ2_HUMO 34       // MQ-2 para humo
+#define PIN_MQ2_BUTANO 35     // MQ-2 para butano (usar pin LPG)
+#define PIN_MQ135_CO2 32      // MQ135 para CO₂
 
 // Sensores ambientales
-#define PIN_DHT11 14
-#define PIN_HUMEDAD_SUELO 25
+#define PIN_DHT11 33
+#define PIN_HUMEDAD_SUELO 13
 
 // ========== CONSTANTES TEMPORALES ==========
-#define INTERVALO_LECTURAS 15000 // 15 segundos como en el código original
+#define INTERVALO_LECTURAS 15000 // 15 segundos
 #define TIMEOUT_WIFI 10000       // 10 segundos
 
 // ========== CONSTANTES SENSORES ==========
@@ -36,47 +34,32 @@
 #define VALOR_SECO 4095
 #define VALOR_HUMEDO 1000
 
-// ⭐ CONSTANTES MQ135 ⭐
-#define RL_MQ135 1000.0       // Resistencia de carga en ohmios
-#define A_MQ135 116.6020682   // Constante A del sensor
-#define B_MQ135 -2.769034857  // Constante B del sensor
-#define CO2_AIRE_LIMPIO 400.0 // CO₂ en aire limpio (ppm)
+// Constantes MQ-2
+#define VC_MQ2 3.3
+#define RL_MQ2 1000.0
 
-// ========== ESTRUCTURAS DE DATOS ==========
+// Constantes MQ135
+#define RL_MQ135 1000.0
+#define A_MQ135 116.6020682
+#define B_MQ135 -2.769034857
+#define CO2_AIRE_LIMPIO 400.0
+
+// Configuración DHT11
+#define DHT_TYPE DHT11
+
+// ========== ESTRUCTURAS DE DATOS SIMPLIFICADAS ==========
 struct DatosGases
 {
-    float co;
-    float humo;
-    float lpg;
-    float alcohol;
-    float metano;
-    float ppm_logaritmico;
-    float ppm_lineal;
-    float ratio_principal;
-    float co2_ppm; // ⭐ Nuevo campo para CO₂ ⭐
+    float humo_ppm;      // Solo humo
+    float butano_ppm;    // Solo butano 
+    float co2_ppm;       // Solo CO₂
 };
 
 struct DatosAmbiente
 {
-    float humedad_suelo;
-    float humedad_aire;
-    float temperatura;
-};
-
-struct DatosMQ2Principal
-{
-    float ppm_logaritmico;
-    float ppm_lineal;
-    float ratio;
-};
-
-// ⭐ NUEVA ESTRUCTURA PARA MQ135 ⭐
-struct DatosMQ135
-{
-    float co2_ppm;
-    float ratio;
-    float voltage;
-    float rs;
+    float humedad_suelo;    // Humedad del suelo
+    float humedad_aire;     // Humedad del aire
+    float temperatura;      // Temperatura del aire
 };
 
 #endif
